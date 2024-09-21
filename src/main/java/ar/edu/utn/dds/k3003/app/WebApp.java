@@ -9,15 +9,22 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.javalin.Javalin;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import ar.edu.utn.dds.k3003.facades.dtos.Constants;
+
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 public class WebApp {
   public static void main(String[] args) {
-    var fachada = new Fachada();
+    EntityManagerFactory entityManagerFactory = startEntityManagerFactory();
+    var fachada = new Fachada(entityManagerFactory);
     var objectMapper = createObjectMapper();
 
-    Integer port = Integer.parseInt(System.getProperty("port","8080"));
+    Integer port = Integer.parseInt(System.getProperty("PORT","8081"));
     Javalin app = Javalin.create().start(port);
     var viandaController = new ViandaController(fachada);
     fachada.setHeladerasProxy(new HeladerasProxy(objectMapper));
@@ -40,5 +47,21 @@ public class WebApp {
     sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
     objectMapper.setDateFormat(sdf);
     return objectMapper;
+  }
+
+  public static EntityManagerFactory startEntityManagerFactory() {
+// https://stackoverflow.com/questions/8836834/read-environment-variables-in-persistence-xml-file
+    Map<String, String> env = System.getenv();
+    Map<String, Object> configOverrides = new HashMap<String, Object>();
+    String[] keys = new String[] { "javax.persistence.jdbc.url", "javax.persistence.jdbc.user",
+            "javax.persistence.jdbc.password", "javax.persistence.jdbc.driver", "hibernate.hbm2ddl.auto",
+            "hibernate.connection.pool_size", "hibernate.show_sql" };
+    for (String key : keys) {
+      if (env.containsKey(key)) {
+        String value = env.get(key);
+        configOverrides.put(key, value);
+      }
+    }
+    return Persistence.createEntityManagerFactory("defaultdb", configOverrides);
   }
 }

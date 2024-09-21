@@ -9,6 +9,8 @@ import ar.edu.utn.dds.k3003.model.Vianda;
 import ar.edu.utn.dds.k3003.repositories.ViandaMapper;
 import ar.edu.utn.dds.k3003.repositories.ViandaRepository;
 import lombok.Getter;
+
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.criteria.CriteriaBuilder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,13 +21,19 @@ import java.util.NoSuchElementException;
 @Getter
 public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaViandas{
   private final ViandaMapper viandaMapper = new ViandaMapper();;
-  private final ViandaRepository viandaRepository = new ViandaRepository();
+  private  ViandaRepository viandaRepository;
   private FachadaViandas fachadaViandas;
   private FachadaHeladeras fachadaHeladeras;
+  private EntityManagerFactory entityManagerFactory;
   public Fachada(){
 
   }
 
+  public Fachada(EntityManagerFactory entityManagerFactory){
+    super();
+    this.entityManagerFactory = entityManagerFactory;
+    this.viandaRepository = new ViandaRepository(this.entityManagerFactory);
+  }
   @Override
   public ViandaDTO agregar(ViandaDTO viandaDTO) throws NoSuchElementException {
 
