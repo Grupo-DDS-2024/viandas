@@ -47,6 +47,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaViandas{
   public ViandaDTO modificarEstado(String s, EstadoViandaEnum estadoViandaEnum) throws NoSuchElementException {
     Vianda vianda = this.viandaRepository.findByQr(s);
     vianda.setEstado(estadoViandaEnum);
+    this.viandaRepository.update(vianda);
     return viandaMapper.map(vianda);
   }
 
