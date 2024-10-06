@@ -1,0 +1,14 @@
+ar\edu\utn\dds\k3003\clients\HeladerasProxy.class
+ar\edu\utn\dds\k3003\model\HeladeraDestino.class
+ar\edu\utn\dds\k3003\app\Fachada.class
+ar\edu\utn\dds\k3003\model\Respuesta.class
+ar\edu\utn\dds\k3003\model\SomeDomainObject.class
+ar\edu\utn\dds\k3003\repositories\ViandaRepository.class
+ar\edu\utn\dds\k3003\model\Vianda.class
+ar\edu\utn\dds\k3003\clients\HeladerasRetrofitClient.class
+ar\edu\utn\dds\k3003\utils\DataDogUtils.class
+ar\edu\utn\dds\k3003\app\WebApp.class
+ar\edu\utn\dds\k3003\utils\DataDogUtils$1.class
+ar\edu\utn\dds\k3003\model\exceptions\SomeDomainException.class
+ar\edu\utn\dds\k3003\controller\ViandaController.class
+ar\edu\utn\dds\k3003\repositories\ViandaMapper.class

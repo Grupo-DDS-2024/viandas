@@ -7,57 +7,70 @@ import ar.edu.utn.dds.k3003.model.HeladeraDestino;
 import ar.edu.utn.dds.k3003.model.Respuesta;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.Context;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.step.StepMeterRegistry;
 
 public class ViandaController {
-  private final Fachada fachada;
+    private final Fachada fachada;
+    private StepMeterRegistry stepMeterRegistry;
+    private Counter contadorViandas;
+    private Counter heladerasCambiadas;
+    private Counter estadoModificado;
 
-  public ViandaController(Fachada fachada){
-    this.fachada = fachada;
-  }
+    public ViandaController(Fachada fachada, StepMeterRegistry stepMeterRegistry) {
+        this.fachada = fachada;
+        this.stepMeterRegistry = stepMeterRegistry;
+        this.contadorViandas = stepMeterRegistry.counter("ddsViandas.viandasCreadas");
+        this.heladerasCambiadas = stepMeterRegistry.counter("ddsViandas.heladerasCambiadas");
+        this.estadoModificado = stepMeterRegistry.counter("ddsViandas.cambiosDeEstado");
+    }
 
-  public void agregar(Context context){
-    ViandaDTO viandaDto = context.bodyAsClass(ViandaDTO.class);
-    var viandaDtoRta = this.fachada.agregar(viandaDto);
-    context.json(viandaDtoRta);
-    context.status(HttpStatus.CREATED);
-  }
+    public void agregar(Context context) {
+        ViandaDTO viandaDto = context.bodyAsClass(ViandaDTO.class);
+        var viandaDtoRta = this.fachada.agregar(viandaDto);
+        contadorViandas.increment();
+        context.json(viandaDtoRta);
+        context.status(HttpStatus.CREATED);
+    }
 
-  public void buscarPorColaboradorIdMesYAnio(Context context){
-    var colabId = context.queryParamAsClass("colaboradorId",Long.class).get();
-    var anio = context.queryParamAsClass("anio",Integer.class).get();
-    var mes = context.queryParamAsClass("mes",Integer.class).get();
-    var ViandaDtoRta = this.fachada.viandasDeColaborador(colabId,mes,anio);
-    context.json(ViandaDtoRta);
-  }
+    public void buscarPorColaboradorIdMesYAnio(Context context) {
+        var colabId = context.queryParamAsClass("colaboradorId", Long.class).get();
+        var anio = context.queryParamAsClass("anio", Integer.class).get();
+        var mes = context.queryParamAsClass("mes", Integer.class).get();
+        var ViandaDtoRta = this.fachada.viandasDeColaborador(colabId, mes, anio);
+        context.json(ViandaDtoRta);
+    }
 
-  public void buscarPorQr(Context context){
-    var qr = context.pathParamAsClass("qr",String.class).get();
-    var ViandaDtoRta = this.fachada.buscarXQR(qr);
-    context.json(ViandaDtoRta);
-  }
+    public void buscarPorQr(Context context) {
+        var qr = context.pathParamAsClass("qr", String.class).get();
+        var ViandaDtoRta = this.fachada.buscarXQR(qr);
+        context.json(ViandaDtoRta);
+    }
 
-  public void verificarVencimiento(Context context){
-    var qr = context.pathParamAsClass("qr",String.class).get();
-    var respuesta = new Respuesta(this.fachada.evaluarVencimiento(qr));
-    context.json(respuesta);
-  }
+    public void verificarVencimiento(Context context) {
+        var qr = context.pathParamAsClass("qr", String.class).get();
+        var respuesta = new Respuesta(this.fachada.evaluarVencimiento(qr));
+        context.json(respuesta);
+    }
 
-  public void modificarHeladera(Context context){
-    var qr = context.pathParamAsClass("qr",String.class).get();
-    HeladeraDestino heladera = context.bodyAsClass(HeladeraDestino.class);
-    var ViandaDtoRta = this.fachada.modificarHeladera(qr,heladera.getHeladeraDestino());
-    context.json(ViandaDtoRta);
-  }
+    public void modificarHeladera(Context context) {
+        var qr = context.pathParamAsClass("qr", String.class).get();
+        HeladeraDestino heladera = context.bodyAsClass(HeladeraDestino.class);
+        var ViandaDtoRta = this.fachada.modificarHeladera(qr, heladera.getHeladeraDestino());
+        heladerasCambiadas.increment();
+        context.json(ViandaDtoRta);
+    }
 
-  public void modificarEstado(Context context){
-    var qr = context.pathParamAsClass("qr",String.class).get();
-    EstadoViandaEnum estado = context.bodyAsClass(EstadoViandaEnum.class);
-    var respuesta = this.fachada.modificarEstado(qr,estado);
-    context.json(respuesta);
-  }
+    public void modificarEstado(Context context) {
+        var qr = context.pathParamAsClass("qr", String.class).get();
+        EstadoViandaEnum estado = context.bodyAsClass(EstadoViandaEnum.class);
+        var respuesta = this.fachada.modificarEstado(qr, estado);
+        estadoModificado.increment();
+        context.json(respuesta);
+    }
 
-  public void listar(Context context){
-    var ViandaDtoRta = this.fachada.viandasLista();
-    context.json(ViandaDtoRta);
-  }
+    public void listar(Context context) {
+        var ViandaDtoRta = this.fachada.viandasLista();
+        context.json(ViandaDtoRta);
+    }
 }

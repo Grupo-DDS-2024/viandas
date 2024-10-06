@@ -11,7 +11,7 @@ import lombok.Setter;
 
 @NoArgsConstructor
 public class Respuesta {
-  private boolean resultado;
+    private boolean resultado;
 
   /*public Respuesta(boolean resultado) {
     this.resultado = resultado;
