@@ -5,10 +5,15 @@ import ar.edu.utn.dds.k3003.facades.dtos.EstadoViandaEnum;
 import ar.edu.utn.dds.k3003.facades.dtos.ViandaDTO;
 import ar.edu.utn.dds.k3003.model.HeladeraDestino;
 import ar.edu.utn.dds.k3003.model.Respuesta;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.Context;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.step.StepMeterRegistry;
+import org.mockito.internal.matchers.Null;
+
+import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 public class ViandaController {
     private final Fachada fachada;
@@ -25,12 +30,23 @@ public class ViandaController {
         this.estadoModificado = stepMeterRegistry.counter("ddsViandas.cambiosDeEstado");
     }
 
-    public void agregar(Context context) {
+    public void agregar(Context context) { //heladeraId, colaboradorId, codigoQR
+        // String codigoQR,
+        //      LocalDateTime fechaElaboracion,
+        //      EstadoViandaEnum estado,
+        //      Long colaboradorId,
+        //      Integer heladeraId) {
         ViandaDTO viandaDto = context.bodyAsClass(ViandaDTO.class);
-        var viandaDtoRta = this.fachada.agregar(viandaDto);
-        contadorViandas.increment();
-        context.json(viandaDtoRta);
-        context.status(HttpStatus.CREATED);
+        ViandaDTO viandaDTOFix = new ViandaDTO(viandaDto.getCodigoQR(), LocalDateTime.now(), EstadoViandaEnum.PREPARADA, viandaDto.getColaboradorId(), null);
+        try {
+            var viandaDtoRta = this.fachada.agregar(viandaDTOFix);
+            contadorViandas.increment();
+            context.json(viandaDtoRta);
+            context.status(HttpStatus.CREATED);
+        } catch (NoSuchElementException e){
+            //fachada.getViandaRepository().getEntityManagerFactory();
+            throw new BadRequestResponse("Error de solicitud. El QR ya existe");
+        }
     }
 
     public void buscarPorColaboradorIdMesYAnio(Context context) {
@@ -43,8 +59,13 @@ public class ViandaController {
 
     public void buscarPorQr(Context context) {
         var qr = context.pathParamAsClass("qr", String.class).get();
-        var ViandaDtoRta = this.fachada.buscarXQR(qr);
-        context.json(ViandaDtoRta);
+        try {
+            var ViandaDtoRta = this.fachada.buscarXQR(qr);
+            context.json(ViandaDtoRta);
+        } catch (NoSuchElementException e){
+            throw new BadRequestResponse("Error de solicitud. El QR NO existe");
+        }
+
     }
 
     public void verificarVencimiento(Context context) {

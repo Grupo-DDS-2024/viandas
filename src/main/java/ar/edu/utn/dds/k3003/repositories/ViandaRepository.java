@@ -1,6 +1,7 @@
 package ar.edu.utn.dds.k3003.repositories;
 
 import ar.edu.utn.dds.k3003.model.Vianda;
+import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.EntityManager;
@@ -18,7 +19,7 @@ public class ViandaRepository {
     private static AtomicLong seqId = new AtomicLong();
     //private Collection<Vianda> viandas;
 
-    @Setter
+    @Setter @Getter
     EntityManagerFactory entityManagerFactory;
 
     public ViandaRepository(EntityManagerFactory entityManagerFactory) {
@@ -31,16 +32,17 @@ public class ViandaRepository {
   }*/
 
     public Vianda save(Vianda vianda) {
-        //if(vianda.getId() <= 0){
-        //  vianda.setId(seqId.getAndIncrement());
-        //this.viandas.add(vianda);
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        entityManager.persist(vianda);
+
+        if (Objects.isNull(vianda.getId())) {
+            entityManager.persist(vianda);
+        } else {
+            vianda = entityManager.merge(vianda);
+        }
+
         entityManager.getTransaction().commit();
         entityManager.close();
-        //}
-
         return vianda;
     }
 

@@ -40,10 +40,16 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaViandas {
     @Override
     public ViandaDTO agregar(ViandaDTO viandaDTO) throws NoSuchElementException {
 
-        Vianda vianda = new Vianda(viandaDTO.getCodigoQR(), viandaDTO.getColaboradorId(),
-                viandaDTO.getHeladeraId(), viandaDTO.getEstado());
-        vianda = this.viandaRepository.save(vianda);
-        return viandaMapper.map(vianda);
+        Vianda vianda = new Vianda(viandaDTO.getCodigoQR(), viandaDTO.getColaboradorId(), viandaDTO.getHeladeraId(), viandaDTO.getEstado());
+
+        try {
+            this.viandaRepository.findByQr(viandaDTO.getCodigoQR());
+        } catch (NoSuchElementException e) {
+            vianda = this.viandaRepository.save(vianda);
+            return viandaMapper.map(vianda);
+        }
+        throw new NoSuchElementException();
+
     }
 
     @Override
