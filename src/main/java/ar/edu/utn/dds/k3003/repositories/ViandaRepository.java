@@ -76,7 +76,7 @@ public class ViandaRepository {
         entityManager.getTransaction().commit();
         entityManager.close();
         return first.orElseThrow(() -> new NoSuchElementException(
-                String.format("No hay una ruta de qr: %s", qr)
+                String.format("No hay una vianda de qr: %s", qr)
         ));
     }
 
